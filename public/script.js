@@ -1,44 +1,57 @@
 // script.js
-// Versao inicial: todo o trabalho acontece no navegador.
-// A tarefa consiste em levar gerarDesenho para o servidor (Pages Functions)
-// e fazer esta pagina apenas enviar o numero e exibir a resposta.
-
-import { gerarDesenho, numeroValido } from "./desenho.js";
+// O navegador só envia o número e o token ao servidor e exibe o SVG recebido.
 
 let idToken = null;
 
-function aoLogar(resposta) {
+// window.aoLogar: o Google precisa enxergar esta função
+window.aoLogar = function (resposta) {
   idToken = resposta.credential; // este é o id_token
   console.log("Logado, token recebido");
-}
+};
+
 const formulario = document.getElementById("formulario");
 const campoNumero = document.getElementById("numero");
-const campoEmail = document.getElementById("email");
 const area = document.getElementById("desenho");
 const mensagem = document.getElementById("mensagem");
 const botaoBaixar = document.getElementById("baixar");
 
 let svgAtual = "";
 
-formulario.addEventListener("submit", (evento) => {
+formulario.addEventListener("submit", async (evento) => {
   evento.preventDefault();
   mensagem.textContent = "";
 
   const numero = Number(campoNumero.value);
-  const email = campoEmail.value.trim();
 
-  if (!numeroValido(numero)) {
-    mensagem.textContent = "Digite um inteiro entre 1 e 100.";
-    return;
-  }
-  if (email === "") {
-    mensagem.textContent = "Informe um e-mail.";
-    return;
-  }
+  try {
+    const resposta = await fetch("/api/desenho", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + (idToken || ""),
+      },
+      body: JSON.stringify({ numero }),
+    });
 
-  svgAtual = gerarDesenho(numero, email);
-  area.innerHTML = svgAtual;
-  botaoBaixar.hidden = false;
+    if (resposta.status === 400) {
+      mensagem.textContent = "Erro 400: digite um número inteiro entre 1 e 100.";
+      return;
+    }
+    if (resposta.status === 401) {
+      mensagem.textContent = "Erro 401: faça login com o Google para gerar o desenho.";
+      return;
+    }
+    if (!resposta.ok) {
+      mensagem.textContent = "Erro " + resposta.status + " ao gerar o desenho.";
+      return;
+    }
+
+    svgAtual = await resposta.text();
+    area.innerHTML = svgAtual;
+    botaoBaixar.hidden = false;
+  } catch (erro) {
+    mensagem.textContent = "Não foi possível falar com o servidor.";
+  }
 });
 
 botaoBaixar.addEventListener("click", () => {
