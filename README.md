@@ -24,4 +24,4 @@ Framework preset: `None`. Build command: vazio. Build output directory: `public`
 
 Nome: Gabriel Teixeira Scholles
 RA: 2026107946
-URL: https://
+URL: https://2bim-avalia1-65u.pages.dev
