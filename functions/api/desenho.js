@@ -64,8 +64,14 @@ export async function onRequest(context) {
     return resposta("Não foi possível validar o token", 401);
   }
 
-  if (!env.GOOGLE_CLIENT_ID || dados.aud !== env.GOOGLE_CLIENT_ID) {
-    return resposta("Token de outro aplicativo", 401);
+  if (!env.GOOGLE_CLIENT_ID) {
+    return resposta("DIAGNOSTICO: variavel GOOGLE_CLIENT_ID nao chegou na funcao", 401);
+  }
+  if (dados.aud !== env.GOOGLE_CLIENT_ID) {
+    return resposta(
+      "DIAGNOSTICO: aud=[" + dados.aud + "] variavel=[" + env.GOOGLE_CLIENT_ID + "] tamanho=" + env.GOOGLE_CLIENT_ID.length,
+      401
+    );
   }
   if (String(dados.email_verified) !== "true") {
     return resposta("E-mail não verificado", 401);
