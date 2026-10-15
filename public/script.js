@@ -5,6 +5,12 @@
 
 import { gerarDesenho, numeroValido } from "./desenho.js";
 
+let idToken = null;
+
+function aoLogar(resposta) {
+  idToken = resposta.credential; // este é o id_token
+  console.log("Logado, token recebido");
+}
 const formulario = document.getElementById("formulario");
 const campoNumero = document.getElementById("numero");
 const campoEmail = document.getElementById("email");
